@@ -21,9 +21,9 @@ import com.gmail.tracebachi.DeltaRedis.Shared.DeltaRedisChannels;
 import com.gmail.tracebachi.DeltaRedis.Shared.Redis.DRCommandSender;
 import com.gmail.tracebachi.DeltaRedis.Shared.Servers;
 import com.google.common.base.Preconditions;
-import net.md_5.bungee.BungeeCord;
 
 import java.util.Set;
+import net.md_5.bungee.api.ProxyServer;
 
 /**
  * Created by Trace Bachi (tracebachi@gmail.com, BigBossZee) on 12/11/15.
@@ -148,7 +148,7 @@ public class DeltaRedisApi
             return;
         }
 
-        BungeeCord.getInstance().getScheduler().runAsync(
+        ProxyServer.getInstance().getScheduler().runAsync(
             plugin,
             () -> deltaSender.publish(
                 destination,
@@ -183,12 +183,12 @@ public class DeltaRedisApi
 
         if(plugin.getServerName().equals(destServer))
         {
-            BungeeCord instance = BungeeCord.getInstance();
+            ProxyServer instance = ProxyServer.getInstance();
             instance.getPluginManager().dispatchCommand(instance.getConsole(), command);
             return;
         }
 
-        BungeeCord.getInstance().getScheduler().runAsync(
+        ProxyServer.getInstance().getScheduler().runAsync(
             plugin,
             () -> deltaSender.publish(
                 destServer,
@@ -209,7 +209,7 @@ public class DeltaRedisApi
         Preconditions.checkNotNull(playerName, "PlayerName was null.");
         Preconditions.checkNotNull(message, "Message was null.");
 
-        BungeeCord.getInstance().getScheduler().runAsync(
+        ProxyServer.getInstance().getScheduler().runAsync(
             plugin,
             () ->
             {
@@ -239,7 +239,7 @@ public class DeltaRedisApi
         Preconditions.checkNotNull(message, "Message was null.");
         Preconditions.checkArgument(!server.equals(Servers.BUNGEECORD), "Server was BUNGEECORD.");
 
-        BungeeCord.getInstance().getScheduler().runAsync(
+        ProxyServer.getInstance().getScheduler().runAsync(
             plugin,
             () -> deltaSender.publish(
                 server,
@@ -274,7 +274,7 @@ public class DeltaRedisApi
         Preconditions.checkNotNull(announcement, "Announcement was null.");
         Preconditions.checkNotNull(permission, "Permission was null.");
 
-        BungeeCord.getInstance().getScheduler().runAsync(
+        ProxyServer.getInstance().getScheduler().runAsync(
             plugin,
             () -> deltaSender.publish(
                 destServer,

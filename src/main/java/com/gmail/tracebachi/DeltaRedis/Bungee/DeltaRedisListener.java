@@ -21,7 +21,6 @@ import com.gmail.tracebachi.DeltaRedis.Shared.Registerable;
 import com.gmail.tracebachi.DeltaRedis.Shared.Shutdownable;
 import com.google.common.base.Preconditions;
 import com.lambdaworks.redis.api.StatefulRedisConnection;
-import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.ServerConnectedEvent;
@@ -32,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import static com.gmail.tracebachi.DeltaRedis.Shared.SplitPatterns.DELTA;
+import net.md_5.bungee.api.ProxyServer;
 
 /**
  * Created by Trace Bachi (tracebachi@gmail.com, BigBossZee) on 11/29/15.
@@ -68,7 +68,7 @@ public class DeltaRedisListener implements Listener, Registerable, Shutdownable
         plugin.debug("DeltaRedisListener.shutdown()");
 
         // Remove all players currently online from Redis
-        for(ProxiedPlayer player : BungeeCord.getInstance().getPlayers())
+        for(ProxiedPlayer player : ProxyServer.getInstance().getPlayers())
         {
             setPlayerAsOffline(player.getName());
         }
@@ -146,7 +146,7 @@ public class DeltaRedisListener implements Listener, Registerable, Shutdownable
                 " , Sender: " + sender +
                 " , Command: /" + command + "}");
 
-            BungeeCord instance = BungeeCord.getInstance();
+            ProxyServer instance = ProxyServer.getInstance();
             instance.getPluginManager().dispatchCommand(instance.getConsole(), command);
         }
     }
