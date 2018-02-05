@@ -31,6 +31,8 @@ import com.lambdaworks.redis.api.StatefulRedisConnection;
 import com.lambdaworks.redis.pubsub.StatefulRedisPubSubConnection;
 import com.lambdaworks.redis.resource.ClientResources;
 import com.lambdaworks.redis.resource.DefaultClientResources;
+import java.util.Map;
+import org.bukkit.configuration.Configuration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -61,19 +63,11 @@ public class DeltaRedis extends JavaPlugin implements DeltaRedisInterface
     @Override
     public void onEnable()
     {
-        info("-----------------------------------------------------------------");
-        info("[IMPORTANT] Please make sure that \'ServerName\' is *exactly* the same as your BungeeCord config for this server.");
-        info("[IMPORTANT] DeltaRedis and all plugins that depend on it may not run correctly if the name is not correct.");
-        info("[IMPORTANT] \'World\' is not the same as \'world\'");
-        info("-----------------------------------------------------------------");
-
         reloadConfig();
         debugEnabled = getConfig().getBoolean("DebugMode", false);
 
-        Preconditions.checkArgument(getConfig().contains("BungeeName"),
-            "BungeeName not specified.");
-        Preconditions.checkArgument(getConfig().contains("ServerNameInBungeeCord"),
-            "ServerNameInBungeeCord not specified.");
+        Preconditions.checkArgument(getConfig().contains("ServerName"), "ServerName not specified.");
+        Preconditions.checkArgument(getConfig().get("ServerType") != null, "ServerType not specified.");
 
         ClientOptions.Builder optionBuilder = new ClientOptions.Builder();
         optionBuilder.autoReconnect(true);
@@ -89,11 +83,9 @@ public class DeltaRedis extends JavaPlugin implements DeltaRedisInterface
 
         pubSubListener = new DRPubSubListener(this);
         pubSubConn.addListener(pubSubListener);
-        pubSubConn.sync().subscribe(
-            getBungeeName() + ':' + getServerName(),
-            getBungeeName() + ':' + Servers.SPIGOT);
+        pubSubConn.sync().subscribe(Servers.SPIGOT + ':' + getServerName());
 
-        commandSender = new DRCommandSender(standaloneConn, this);
+        commandSender = new DRCommandSender(standaloneConn, this, getConfig().getString("ServerType"));
         commandSender.setup();
 
         deltaRedisApi = new DeltaRedisApi(commandSender, this);
@@ -190,15 +182,9 @@ public class DeltaRedis extends JavaPlugin implements DeltaRedisInterface
     }
 
     @Override
-    public String getBungeeName()
-    {
-        return getConfig().getString("BungeeName");
-    }
-
-    @Override
     public String getServerName()
     {
-        return getConfig().getString("ServerNameInBungeeCord");
+        return getConfig().getString("ServerName");
     }
 
     @Override
@@ -219,6 +205,31 @@ public class DeltaRedis extends JavaPlugin implements DeltaRedisInterface
         if(debugEnabled)
         {
             getLogger().info("[Debug] " + message);
+        }
+    }
+
+    @Override
+    public void reloadConfig()
+    {
+        super.reloadConfig();
+        // check env vars
+        Map<String, String> env = System.getenv();
+        if (env.containsKey("REDIS_HOST") && env.containsKey("REDIS_PORT") && env.containsKey("REDIS_PASS") && env.containsKey("SERVER_NAME"))
+        {
+            getConfig().set("RedisServer.URL", env.get("REDIS_HOST"));
+            getConfig().set("RedisServer.Port", env.get("REDIS_PORT"));
+            if (env.get("REDIS_PASS") != "")
+            {
+                getConfig().set("RedisServer.Password", env.get("REDIS_PASS"));
+                getConfig().set("HasPassword", true);
+            }
+            getConfig().set("ServerName", env.get("SERVER_NAME"));
+            if (env.containsKey("SERVER_TYPE"))
+            {
+                getConfig().set("ServerType", env.get("SERVER_TYPE"));
+            }
+            getLogger().info("Config loaded from env vars !");
+            return;
         }
     }
 

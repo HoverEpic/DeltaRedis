@@ -68,15 +68,6 @@ public class DeltaRedisApi
     }
 
     /**
-     * @return Name of the BungeeCord instance to which the server belongs.
-     * This value is set in the configuration file for each server.
-     */
-    public String getBungeeName()
-    {
-        return plugin.getBungeeName();
-    }
-
-    /**
      * @return Name of the server (String). If the server is BungeeCord, the
      * server name will be {@link Servers#BUNGEECORD}.
      */

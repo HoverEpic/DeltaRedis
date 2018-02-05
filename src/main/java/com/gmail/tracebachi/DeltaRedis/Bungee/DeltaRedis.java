@@ -61,22 +61,11 @@ public class DeltaRedis extends Plugin implements DeltaRedisInterface
     @Override
     public void onEnable()
     {
-        info("-----------------------------------------------------------------");
-        info("[IMPORTANT] Please verify that all Spigot servers are configured with their correct cased name.");
-        info("[IMPORTANT] \'World\' is not the same as \'world\'");
-        for(Map.Entry<String, ServerInfo> entry : getProxy().getServers().entrySet())
-        {
-            info("[IMPORTANT] Case-sensitive server name: " + entry.getValue().getName());
-        }
-        info("-----------------------------------------------------------------");
-
         reloadConfig();
         if(config == null) { return; }
         debugEnabled = config.getBoolean("DebugMode", false);
 
-        Preconditions.checkArgument(
-            config.get("BungeeName") != null,
-            "BungeeName not specified.");
+        Preconditions.checkArgument( config.get("ServerName") != null, "ServerName not specified.");
 
         ClientOptions.Builder optionBuilder = new ClientOptions.Builder();
         optionBuilder.autoReconnect(true);
@@ -93,9 +82,9 @@ public class DeltaRedis extends Plugin implements DeltaRedisInterface
 
         pubSubListener = new DRPubSubListener(this);
         pubSubConn.addListener(pubSubListener);
-        pubSubConn.sync().subscribe(getBungeeName() + ':' + Servers.BUNGEECORD);
+        pubSubConn.sync().subscribe(Servers.BUNGEECORD + ':' + getServerName());
 
-        commandSender = new DRCommandSender(commandConn, this);
+        commandSender = new DRCommandSender(commandConn, this, "bungeecord");
         commandSender.setup();
 
         deltaRedisApi = new DeltaRedisApi(commandSender, this);
@@ -164,15 +153,9 @@ public class DeltaRedis extends Plugin implements DeltaRedisInterface
     }
 
     @Override
-    public String getBungeeName()
-    {
-        return config.getString("BungeeName");
-    }
-
-    @Override
     public String getServerName()
     {
-        return Servers.BUNGEECORD;
+        return config.getString("ServerName");
     }
 
     @Override
@@ -198,6 +181,22 @@ public class DeltaRedis extends Plugin implements DeltaRedisInterface
 
     private void reloadConfig()
     {
+        // check env vars
+        Map<String, String> env = System.getenv();
+        if (env.containsKey("REDIS_HOST") && env.containsKey("REDIS_PORT") && env.containsKey("REDIS_PASS") && env.containsKey("SERVER_NAME"))
+        {
+            config = new Configuration();
+            config.set("RedisServer.URL", env.get("REDIS_HOST"));
+            config.set("RedisServer.Port", env.get("REDIS_PORT"));
+            if (env.get("REDIS_PASS") != "")
+            {
+                config.set("RedisServer.Password", env.get("REDIS_PASS"));
+                config.set("HasPassword", true);
+            }
+            config.set("ServerName", env.get("SERVER_NAME"));
+            getLogger().info("Config loaded from env vars !");
+            return;
+        }
         try
         {
             File file = ConfigUtil.saveResource(this, "bungee-config.yml", "config.yml");

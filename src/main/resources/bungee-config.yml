@@ -7,16 +7,8 @@ RedisServer:
   HasPassword: False
   Password: DeltaRedis_Is_Great!
 
-# Name        | Type
-# ------------------------
-# MrRoboto    | BungeeCord
-# Diamond     | Spigot
-# Gold        | Spigot
-# Iron        | Spigot
-
-# Name of this BungeeCord instance
-# From the example, this should be set to 'MrRoboto'.
-BungeeName: Bungee
+# Name of this server instance
+ServerName: Bungeecord
 
 # Used for debugging DeltaRedis
 DebugMode: True

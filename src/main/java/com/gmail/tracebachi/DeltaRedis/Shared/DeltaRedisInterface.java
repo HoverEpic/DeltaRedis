@@ -33,12 +33,6 @@ public interface DeltaRedisInterface
     void onRedisMessageEvent(String source, String channel, String message);
 
     /**
-     * @return Name of the BungeeCord instance to which the server belongs.
-     * This value is set in the configuration file for each server.
-     */
-    String getBungeeName();
-
-    /**
      * @return Name of the server. If the server is a BungeeCord instance, the
      * server name will be {@link Servers#BUNGEECORD}. This value is set in
      * the configuration file for each server.

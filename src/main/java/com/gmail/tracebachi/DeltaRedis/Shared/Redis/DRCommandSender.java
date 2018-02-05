@@ -33,7 +33,7 @@ import java.util.Set;
 public class DRCommandSender implements Shutdownable
 {
     private final String serverName;
-    private final String bungeeName;
+    private final String serverType;
 
     private StatefulRedisConnection<String, String> connection;
     private DeltaRedisInterface plugin;
@@ -41,12 +41,11 @@ public class DRCommandSender implements Shutdownable
     private Set<String> cachedServers;
     private Set<String> cachedPlayers;
 
-    public DRCommandSender(StatefulRedisConnection<String, String> connection,
-                           DeltaRedisInterface plugin)
+    public DRCommandSender(StatefulRedisConnection<String, String> connection, DeltaRedisInterface plugin, String serverType)
     {
         this.connection = connection;
         this.plugin = plugin;
-        this.bungeeName = plugin.getBungeeName();
+        this.serverType = serverType;
         this.serverName = plugin.getServerName();
     }
 
@@ -56,8 +55,7 @@ public class DRCommandSender implements Shutdownable
     public synchronized void setup()
     {
         plugin.debug("DRCommandSender.setup()");
-
-        connection.sync().sadd(bungeeName + ":servers", serverName);
+        connection.sync().sadd(serverType + ":servers", serverName);
     }
 
     @Override
@@ -65,7 +63,7 @@ public class DRCommandSender implements Shutdownable
     {
         plugin.debug("DRCommandSender.shutdown()");
 
-        connection.sync().srem(bungeeName + ":servers", serverName);
+        connection.sync().srem(serverType + ":servers", serverName);
         connection.close();
         connection = null;
         plugin = null;
@@ -79,7 +77,7 @@ public class DRCommandSender implements Shutdownable
     {
         plugin.debug("DRCommandSender.getServers()");
 
-        Set<String> result = connection.sync().smembers(bungeeName + ":servers");
+        Set<String> result = connection.sync().smembers(serverType + ":servers");
 
         isBungeeCordOnline = result.remove(Servers.BUNGEECORD);
         cachedServers = Collections.unmodifiableSet(result);
@@ -114,7 +112,7 @@ public class DRCommandSender implements Shutdownable
     {
         plugin.debug("DRCommandSender.getPlayers()");
 
-        Set<String> result = connection.sync().smembers(bungeeName + ":players");
+        Set<String> result = connection.sync().smembers(serverType + ":players");
 
         cachedPlayers = Collections.unmodifiableSet(result);
 
@@ -146,7 +144,7 @@ public class DRCommandSender implements Shutdownable
         plugin.debug("DRCommandSender.publish(" + dest + ", " + channel + ", " + message + ")");
 
         return connection.sync().publish(
-            bungeeName + ':' + dest,
+            serverType + ':' + dest,
             serverName + "/\\" + channel + "/\\" + message);
     }
 
@@ -163,7 +161,7 @@ public class DRCommandSender implements Shutdownable
         plugin.debug("DRCommandSender.getPlayer(" + playerName + ")");
 
         Map<String, String> result = connection.sync().hgetall(
-            bungeeName + ":players:" + playerName.toLowerCase());
+            serverType + ":players:" + playerName.toLowerCase());
 
         if(result == null) { return null; }
 

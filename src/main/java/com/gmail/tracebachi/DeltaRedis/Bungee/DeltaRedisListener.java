@@ -38,7 +38,7 @@ import net.md_5.bungee.api.ProxyServer;
  */
 public class DeltaRedisListener implements Listener, Registerable, Shutdownable
 {
-    private final String bungeeName;
+    private final String serverName;
     private StatefulRedisConnection<String, String> connection;
     private HashSet<String> onlinePlayers = new HashSet<>(64);
     private DeltaRedis plugin;
@@ -47,7 +47,7 @@ public class DeltaRedisListener implements Listener, Registerable, Shutdownable
     {
         this.connection = connection;
         this.plugin = plugin;
-        this.bungeeName = plugin.getBungeeName();
+        this.serverName = plugin.getServerName();
     }
 
     @Override
@@ -74,13 +74,13 @@ public class DeltaRedisListener implements Listener, Registerable, Shutdownable
         }
 
         // Clear the Redis set of online players
-        connection.sync().del(bungeeName + ":players");
+        connection.sync().del(serverName + ":players");
 
         // Handle the case where PlayerDisconnectEvent may not have been called
         // to flush data for players that are no longer online
         for(String name : onlinePlayers)
         {
-            connection.sync().del(bungeeName + ":players:" + name);
+            connection.sync().del(serverName + ":players:" + name);
         }
 
         onlinePlayers.clear();
@@ -173,8 +173,8 @@ public class DeltaRedisListener implements Listener, Registerable, Shutdownable
 
         plugin.debug("DeltaRedisListener.setPlayerAsOnline(" + playerName + ")");
 
-        connection.sync().hmset(bungeeName + ":players:" + playerName, map);
-        connection.sync().sadd(bungeeName + ":players", playerName);
+        connection.sync().hmset(serverName + ":players:" + playerName, map);
+        connection.sync().sadd(serverName + ":players", playerName);
 
         onlinePlayers.add(playerName);
     }
@@ -193,8 +193,8 @@ public class DeltaRedisListener implements Listener, Registerable, Shutdownable
 
         plugin.debug("DeltaRedisListener.setPlayerAsOffline(" + playerName + ")");
 
-        connection.sync().srem(bungeeName + ":players", playerName);
-        connection.sync().del(bungeeName + ":players:" + playerName);
+        connection.sync().srem(serverName + ":players", playerName);
+        connection.sync().del(serverName + ":players:" + playerName);
 
         onlinePlayers.remove(playerName);
     }
