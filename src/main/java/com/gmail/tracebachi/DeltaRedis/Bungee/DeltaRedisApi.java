@@ -114,6 +114,11 @@ public class DeltaRedisApi
         return deltaSender.getCachedPlayers();
     }
 
+    public DeltaRedis getPlugin()
+    {
+        return plugin;
+    }
+
     /**
      * Publishes a message built from string message pieces joined by
      * the "/\" (forward-slash, back-slash) to Redis.

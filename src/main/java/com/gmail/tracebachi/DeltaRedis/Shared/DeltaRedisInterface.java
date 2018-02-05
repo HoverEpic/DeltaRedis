@@ -16,6 +16,8 @@
  */
 package com.gmail.tracebachi.DeltaRedis.Shared;
 
+import com.lambdaworks.redis.RedisClient;
+
 /**
  * Created by Trace Bachi (tracebachi@gmail.com, BigBossZee) on 11/27/15.
  */
@@ -42,6 +44,11 @@ public interface DeltaRedisInterface
      * the configuration file for each server.
      */
     String getServerName();
+
+    /**
+     * @return RedisClient instance.
+     */
+    RedisClient getRedisClient();
 
     /**
      * Logs the message as INFO.

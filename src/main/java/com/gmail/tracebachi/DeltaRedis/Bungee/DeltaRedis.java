@@ -159,6 +159,11 @@ public class DeltaRedis extends Plugin implements DeltaRedisInterface
     }
 
     @Override
+    public RedisClient getRedisClient() {
+        return client;
+    }
+
+    @Override
     public String getBungeeName()
     {
         return config.getString("BungeeName");

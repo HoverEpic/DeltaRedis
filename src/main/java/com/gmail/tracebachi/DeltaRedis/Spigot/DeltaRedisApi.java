@@ -116,6 +116,11 @@ public class DeltaRedisApi
         return deltaSender.getCachedPlayers();
     }
 
+    public DeltaRedis getPlugin()
+    {
+        return plugin;
+    }
+
     /**
      * @param partial Non-null string that is the beginning of a name
      * @return A list of player names that begins with the partial
